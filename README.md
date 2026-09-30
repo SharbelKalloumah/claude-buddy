@@ -9,6 +9,8 @@ A floating 3D desktop widget that shows what Claude Code is doing, and can light
 | `needs_input` | yellow mascot bounces, red ring, whistle | 🚨 police lights |
 | `done` | happy bounce, green ring; back to idle after 8s | off |
 
+The mascot is a rigged voxel character with soft rounded blocks: a big head on a flexible neck, eyebrows, eye glints, cheek blush, a springy antenna that wobbles with every move, oversized hands and short legs, with squash & stretch plus dust puffs on every landing. He has 10 poses (casual, confident, curious, thinking, excited, confused, sleepy, proud, surprised) and signature moves (head bob, lean, peek, shrug, bounce, hop, spin, look back, stretch, wiggle, side step, freeze, yawn, wave). While idle he runs little routines in one of five moods (calm, playful, curious, confident, sleepy), which changes every few minutes. The ring around him is a status halo: it glows, a bright pulse sweeps around it, tick marks show the spin, comet dots with trails ride it while Claude works, sparkles burst when a task finishes, and it tips and ripples with his movement. The code is in `src/renderer/widget/mascot/`.
+
 The mascot also cracks jokes in a speech bubble, and sometimes wears sunglasses when a task is done. Change the lines in the `QUIPS` list in `src/renderer/widget/renderer.js`; `{name}` is replaced with your name from Settings.
 
 ## Install and run
