@@ -37,7 +37,8 @@ for (const [event, groups] of Object.entries(settings.hooks)) {
 }
 
 if (!remove) {
-  const { hooks } = JSON.parse(fs.readFileSync(hooksFile, 'utf8'));
+  const raw = fs.readFileSync(hooksFile, 'utf8').replaceAll('{{PROJECT_DIR}}', path.resolve(__dirname, '..'));
+  const { hooks } = JSON.parse(raw);
   for (const [event, groups] of Object.entries(hooks)) {
     settings.hooks[event] = [...(settings.hooks[event] || []), ...groups];
   }

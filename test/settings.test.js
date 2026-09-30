@@ -72,7 +72,7 @@ test('lighting does nothing but stop animations when disabled', () => {
 });
 
 test('user name: trimmed, capped, and falls back to a default when blank', () => {
-  assert.equal(sanitize({ userName: '  Sharbel   Kh  ' }).userName, 'Sharbel Kh');
+  assert.equal(sanitize({ userName: '  Ada   L  ' }).userName, 'Ada L');
   assert.equal(sanitize({ userName: 'x'.repeat(50) }).userName.length, 30);
   assert.equal(sanitize({ userName: '   ' }).userName, DEFAULTS.userName);
   assert.equal(sanitize({ userName: 42 }).userName, DEFAULTS.userName);

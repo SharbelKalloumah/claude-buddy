@@ -11,7 +11,7 @@ const SOUND_IDS = ['none', 'whistle', 'siren', 'doorbell', 'chime', 'beep', 'suc
 const SOUND_EVENTS = ['needs_input', 'done', 'working'];
 const LOCALES = ['en-US', 'en-GB', 'ar-SA', 'fr-FR', 'de-DE', 'es-ES', 'it-IT', 'nl-NL', 'pt-BR', 'tr-TR', 'ru-RU', 'zh-CN', 'ja-JP', 'ko-KR'];
 
-// Default name: the OS account name, capitalized ("sharbel" → "Sharbel").
+// Default name: the OS account name, capitalized ("ada" → "Ada").
 function defaultName() {
   try {
     const n = os.userInfo().username.split(/[._-]/)[0];

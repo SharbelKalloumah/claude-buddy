@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/idle\" || \"/Users/sharbel/MyProjects/my_claude/scripts/launch-buddy.sh\"",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/idle\" || \"{{PROJECT_DIR}}/scripts/launch-buddy.sh\"",
             "timeout": 5
           }
         ]
