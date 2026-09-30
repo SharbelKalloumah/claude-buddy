@@ -1,0 +1,20 @@
+{
+  "name": "claude-buddy",
+  "version": "1.0.0",
+  "description": "Floating 3D desktop status widget for Claude Code",
+  "main": "src/main/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "launch-buddy": "sh ./scripts/launch-buddy.sh",
+    "test": "node --test test/*.test.js",
+    "led:probe": "node scripts/led-probe.js"
+  },
+  "dependencies": {
+    "@abandonware/noble": "^1.9.2-26",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1"
+  }
+}

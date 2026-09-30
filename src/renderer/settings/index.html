@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>Claude Buddy Settings</title>
+  <style>
+    :root {
+      --bg: #18181b;
+      --card: #232327;
+      --line: #34343a;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #D97757;
+      --ok: #5BC98A;
+      --warn: #F2B84B;
+      --bad: #FF4D4D;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px 20px 28px;
+      background: var(--bg);
+      color: var(--text);
+      font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    h1 { margin: 0 0 2px; font-size: 18px; }
+    .sub { margin: 0 0 18px; color: var(--muted); }
+    section { margin-bottom: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+    h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .row { display: flex; align-items: center; gap: 10px; min-height: 30px; }
+    .row + .row { margin-top: 6px; }
+    .grow { flex: 1; min-width: 0; }
+    .hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+    button {
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #2e2e33;
+      color: var(--text);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { border-color: #52525b; }
+    button:disabled { opacity: 0.45; cursor: default; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #1b1b1f; }
+    button.link { padding: 0; border: none; background: none; color: var(--muted); font-weight: 500; text-decoration: underline; }
+    select {
+      padding: 4px 6px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #2e2e33;
+      color: var(--text);
+      font: inherit;
+    }
+    input[type="text"] {
+      width: 150px;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #2e2e33;
+      color: var(--text);
+      font: inherit;
+    }
+    input[type="text"]:focus { outline: none; border-color: var(--accent); }
+    .muted { color: var(--muted); }
+    .num { width: 38px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+    input[type="range"] { width: 150px; accent-color: var(--accent); }
+    input:disabled { opacity: 0.4; }
+    .sound-row { display: grid; grid-template-columns: 1fr 150px 30px; align-items: center; gap: 8px; min-height: 34px; }
+    .sound-row button { padding: 3px 0; }
+    input[type="color"] { width: 34px; height: 26px; padding: 0; border: none; background: none; cursor: pointer; }
+    input[type="color"]:disabled { opacity: 0.25; cursor: default; }
+
+    /* Toggle switch */
+    .switch { position: relative; width: 36px; height: 20px; flex: none; }
+    .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .switch span { position: absolute; inset: 0; border-radius: 999px; background: #3f3f46; transition: background 0.15s; pointer-events: none; }
+    .switch span::after {
+      content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+      border-radius: 50%; background: #fff; transition: transform 0.15s;
+    }
+    .switch input:checked + span { background: var(--ok); }
+    .switch input:checked + span::after { transform: translateX(16px); }
+
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--muted); }
+    #status-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Device list */
+    #devices { margin-top: 8px; }
+    .device { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); }
+    .device .name { font-weight: 600; }
+    .device .meta { color: var(--muted); font-size: 12px; }
+    .in-use { color: var(--ok); font-weight: 600; }
+
+    /* Rules */
+    .rule { display: grid; grid-template-columns: 1fr 130px 34px 30px; align-items: center; gap: 8px; padding: 6px 0; }
+    .rule + .rule { border-top: 1px solid var(--line); }
+    .rule .state { font-weight: 600; }
+    .rule .state small { display: block; color: var(--muted); font-weight: 400; }
+    .rule button { padding: 3px 0; }
+
+    /* Hardware */
+    dl { display: grid; grid-template-columns: 110px 1fr; gap: 5px 10px; margin: 0; }
+    dt { color: var(--muted); }
+    dd { margin: 0; }
+    code { font: 12px ui-monospace, Menlo, monospace; color: #e4e4e7; }
+    #toast { min-height: 18px; margin-top: 8px; color: var(--bad); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Claude Buddy</h1>
+  <p class="sub">Your desktop buddy for Claude Code.</p>
+
+  <section>
+    <h2>General</h2>
+    <label class="row">
+      <span class="grow">Your name <small class="muted">(Buddy uses it in its speech bubbles)</small></span>
+      <input id="user-name" type="text" maxlength="30" spellcheck="false" autocomplete="off">
+    </label>
+  </section>
+
+  <section>
+    <h2>Sounds</h2>
+    <label class="row">
+      <span class="grow">Play sounds</span>
+      <span class="switch"><input id="sound" type="checkbox"><span></span></span>
+    </label>
+    <div class="row">
+      <span class="grow">Volume</span>
+      <input id="volume" type="range" min="0" max="100">
+      <span id="volume-value" class="num"></span>
+    </div>
+    <div id="sound-events"></div>
+    <label class="row">
+      <span class="grow">Repeat the "Needs you" sound every 30 seconds</span>
+      <span class="switch"><input id="repeat" type="checkbox"><span></span></span>
+    </label>
+  </section>
+
+  <section>
+    <h2>LED lights</h2>
+    <label class="row">
+      <span class="grow">Enable LED lights</span>
+      <span class="switch"><input id="enabled" type="checkbox"><span></span></span>
+    </label>
+    <label class="row">
+      <span class="grow">Connect automatically when Buddy starts</span>
+      <span class="switch"><input id="auto-connect" type="checkbox"><span></span></span>
+    </label>
+    <div class="row">
+      <span class="dot" id="status-dot"></span>
+      <span class="grow" id="status-text">Disconnected</span>
+      <button id="connect">Connect</button>
+    </div>
+    <div class="row">
+      <span class="grow">Light</span>
+      <button id="light-on" data-needs-connection>ON</button>
+      <button id="light-off" data-needs-connection>OFF</button>
+      <input id="light-color" type="color" title="Colour" data-needs-connection>
+    </div>
+    <div class="row">
+      <span class="grow">Brightness</span>
+      <input id="light-brightness" type="range" min="0" max="100" data-needs-connection>
+      <span id="brightness-value" class="num"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Device</h2>
+    <div class="row">
+      <span class="grow" id="device-current">Any compatible controller</span>
+      <button class="link" id="forget" hidden>Forget</button>
+      <button id="detect">Detect devices</button>
+    </div>
+    <div id="devices"></div>
+    <p class="hint">The controller accepts one connection at a time. Close the bojiaLED app on your phone before connecting.</p>
+  </section>
+
+  <section>
+    <h2>When to light</h2>
+    <div id="rules"></div>
+    <p class="hint">After you accept a request, Claude goes back to <b>Working</b>. Set it to <b>Off</b> to turn the strip off, or to <b>Solid colour</b> to keep a steady light. ▶ previews a pattern for 5 seconds.</p>
+    <div id="toast"></div>
+  </section>
+
+  <section>
+    <h2>Supported LEDs</h2>
+    <dl>
+      <dt>Controller</dt><dd><b>BJ_LED_M</b> Bluetooth LE RGB strip controller (phone app: bojiaLED)</dd>
+      <dt>Tested with</dt><dd>2025 batch, firmware <code>BJP10Y68CV19</code></dd>
+      <dt>Bluetooth</dt><dd>Service <code>EEA0</code>, commands on <code>EE02</code>, notifications on <code>EE01</code></dd>
+      <dt>Not supported</dt><dd>Controllers with other protocols, e.g. ELK-BLEDOM or Triones</dd>
+    </dl>
+  </section>
+
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/idle\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/working\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/working\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/working\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/needs_input\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|elicitation_dialog|elicitation_url_dialog|agent_needs_input",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/needs_input\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -o /dev/null -m 1 -X POST \"http://127.0.0.1:${CLAUDE_BUDDY_PORT:-7788}/done\" || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
