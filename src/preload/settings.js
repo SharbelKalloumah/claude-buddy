@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('settingsApi', {
   turnOff: () => ipcRenderer.invoke('led:command', 'turnOff'),
   setRgb: (r, g, b) => ipcRenderer.invoke('led:command', 'setRgb', [r, g, b]),
   setBrightness: (pct) => ipcRenderer.invoke('led:command', 'setBrightness', [pct]),
+  voiceStatus: () => ipcRenderer.invoke('voice:status'),
+  requestVoiceAccess: () => ipcRenderer.invoke('voice:request-access'),
   onLedState: (cb) => ipcRenderer.on('led:state', (_e, state) => cb(state)),
   onSettings: (cb) => ipcRenderer.on('settings:changed', (_e, s) => cb(s)),
 });

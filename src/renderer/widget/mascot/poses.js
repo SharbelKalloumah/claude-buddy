@@ -36,6 +36,9 @@ export const POSES = {
   // Rounded shoulders, head dropping, arms loose, heavy lids.
   sleepy: { browY: -0.5, headX: 0.3, headZ: 0.08, torsoX: 0.1, armLZ: 0.02, armRZ: 0.02, squash: -0.06, lid: 0.55, shoulderL: -0.04, shoulderR: -0.04, eyeY: -0.4 },
 
+  // Hand cupped at the ear, leaning in, eyes wide.
+  listening: { armRX: 1.0, armRZ: -0.8, headZ: 0.22, headY: -0.1, torsoX: 0.1, rotZ: 0.05, eyeScale: 1.15, browY: 0.45 },
+
   // Chest out, hands behind back, small smile.
   proud: { browY: -0.2, blush: 0.3, torsoX: -0.1, headX: -0.12, armLX: -0.7, armRX: -0.7, armLZ: 0.08, armRZ: 0.08, smile: 1, squash: 0.03 },
 

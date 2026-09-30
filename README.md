@@ -27,11 +27,23 @@ Needs Node 18+ and `curl`. Only one copy runs at a time.
 - **⚙** next to the label opens Settings. Its dot shows the LED strip connection: green means connected, yellow connecting, red error.
 - **Right-click the label** for *Always on top*, *Sound*, *Settings…* and *Quit*.
 
+## Talk to him
+
+Click the mascot to start talking, hold him for push-to-talk, or press **⌃⌥Space** from anywhere. What you say is transcribed on your Mac and pasted straight into the Claude Code prompt, ready for you to review and hit Enter.
+
+First-time setup on macOS:
+
+1. **Dictation on** — System Settings → Keyboard → Dictation. Apple's offline speech models only load when this is on.
+2. **Microphone + Accessibility** — open Settings → Voice → **Grant access**. Accessibility is what lets Buddy paste into your terminal.
+
+Nothing leaves your Mac: `native/stt.swift` uses Apple's on-device recogniser, built by `npm run build:native` (needs Xcode Command Line Tools). Drag the widget by holding and moving the mouse anywhere on it.
+
 ## Settings
 
 Open them with **⚙** or right-click → **Settings…**. Changes save immediately.
 
 - **General:** your name, which the mascot uses in its speech bubbles (defaults to your account name).
+- **Voice:** turn talking on or off, set the shortcut and language, choose whether Buddy presses Enter for you, and grant the macOS permissions.
 - **Sounds:** turn sounds on or off and set the volume. Choose a sound for *Needs you*, *Done* and *Working* from Wolf whistle, Police siren, Doorbell, Chime, Beep-beep, Success, Ta-da, Pop and Click, each with a ▶ preview. The *Needs you* sound can repeat every 30 seconds.
 
 - **LED lights:** turn LED lights on or off entirely, and choose whether to connect automatically when Buddy starts. The manual controls are here too: Connect, ON/OFF, colour and brightness.
@@ -102,6 +114,7 @@ src/main/led/        LED strip: protocol, BLE transport, controller, patterns
 src/preload/         context bridges for the widget and settings windows
 src/renderer/        widget (mascot + 💡 panel) and settings pages
 scripts/             launcher, hook installer, LED probe
+native/              macOS on-device speech helper (Swift)
 hooks/               Claude Code hook definitions
 docs/                hardware notes
 test/                npm test (no hardware needed)

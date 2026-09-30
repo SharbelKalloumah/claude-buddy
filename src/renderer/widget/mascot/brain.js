@@ -107,6 +107,8 @@ export class Brain {
     this.saccade = [0, 0];
     this.nextSaccade = 1;
     this.spring = { x: 0, z: 0, vx: 0, vz: 0 }; // antenna wobble
+    this.listening = false;
+    this.listenLevel = 0; // 0..1 mic loudness
     this.prevOut = null;
     this.setPersonality(pickOne(Object.keys(PERSONALITIES)));
   }
@@ -128,7 +130,14 @@ export class Brain {
   get speed() { return this.state === 'idle' ? this.p.speed : Math.max(1, this.p.speed); }
   get amp() { return this.state === 'idle' ? this.p.amp : Math.max(1, this.p.amp); }
 
+  setListening(on) {
+    this.listening = on;
+    this.queue = [];
+    this.wait = 0;
+  }
+
   _nextSteps() {
+    if (this.listening) return [{ pose: 'listening', look: [0, 0.1], smile: 0, wait: 2 }];
     if (this.state !== 'idle') return [...STATE_LOOP[this.state]];
     if (this.t > this.nextSwitch) this.setPersonality(pickOne(Object.keys(PERSONALITIES), this.personalityName));
     this.lastCycle = pickOne(this.p.cycles, this.lastCycle);
@@ -214,6 +223,7 @@ export class Brain {
     // Breathing, micro head drift, talking mouth, blinks.
     out.squash += 0.012 * Math.sin(this.t * 2.2 * this.speed);
     out.headY += 0.03 * Math.sin(this.t * 0.6);
+    if (this.listening) out.squash += this.listenLevel * 0.09; // he perks up as you speak
     out.headX += 0.02 * Math.sin(this.t * 0.83 + 1);
     out.rotZ += 0.015 * Math.sin(this.t * 0.9 * this.speed);
 

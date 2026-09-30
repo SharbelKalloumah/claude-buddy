@@ -1,13 +1,14 @@
 // Claude Buddy main process: widget window, settings window, localhost state server, LED strip.
 
-const { app, BrowserWindow, Menu, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, screen, globalShortcut, systemPreferences } = require('electron');
 const http = require('http');
 const path = require('path');
 const { BleTransport } = require('./led/ble-transport');
 const { LedController } = require('./led/controller');
 const { PATTERNS } = require('./led/patterns');
-const { Settings } = require('./settings');
+const { Settings, LOCALES } = require('./settings');
 const { Lighting } = require('./lighting');
+const voice = require('./voice');
 
 const HOST = '127.0.0.1'; // local only
 const DEFAULT_PORT = 7788;
@@ -33,6 +34,7 @@ let settings = null;
 let led = null;
 let lighting = null;
 let quitting = false;
+let dragStart = null; // window bounds when a manual drag began
 
 // Only one Buddy at a time.
 if (!app.requestSingleInstanceLock()) {
@@ -89,6 +91,7 @@ function createWindow() {
     send(win, 'buddy:state', currentState);
     send(win, 'buddy:sounds', soundConfig(settings.get()));
     send(win, 'buddy:name', settings.get().userName);
+    send(win, 'buddy:voice', settings.get().voice);
     send(win, 'led:state', led.getState());
   });
   // Windows shows its own menu on drag regions; use ours.
@@ -145,6 +148,10 @@ function applySettings(patch) {
   const after = settings.update(patch);
   if (JSON.stringify(soundConfig(after)) !== JSON.stringify(soundConfig(before))) send(win, 'buddy:sounds', soundConfig(after));
   if (after.userName !== before.userName) send(win, 'buddy:name', after.userName);
+  if (JSON.stringify(after.voice) !== JSON.stringify(before.voice)) {
+    send(win, 'buddy:voice', after.voice);
+    registerHotkey(after.voice);
+  }
   send(settingsWin, 'settings:changed', after);
 
   const newId = after.led.device?.id || null;
@@ -214,12 +221,56 @@ function setupLed() {
   if (settings.get().led.enabled && settings.get().led.autoConnect) led.connect().catch(() => {});
 }
 
+// ---------- voice ----------
+
+// The mascot sits on the window, so we drag it ourselves; that keeps clicks free for talking.
+ipcMain.on('buddy:drag-start', () => { dragStart = win?.getBounds() || null; });
+ipcMain.on('buddy:drag-move', (_e, dx, dy) => {
+  if (win && dragStart) win.setPosition(Math.round(dragStart.x + dx), Math.round(dragStart.y + dy));
+});
+
+function registerHotkey({ enabled, hotkey }) {
+  globalShortcut.unregisterAll();
+  if (!enabled || !hotkey) return true;
+  try {
+    return globalShortcut.register(hotkey, () => send(win, 'buddy:voice-toggle'));
+  } catch {
+    return false;
+  }
+}
+
+ipcMain.handle('voice:transcribe', safe(async (wav) => {
+  const { locale, autoSend } = settings.get().voice;
+  const text = await voice.transcribe(wav, locale);
+  if (!text) return { text: '' };
+  await voice.type(text, { submit: autoSend });
+  return { text };
+}));
+
+ipcMain.handle('voice:status', () => ({
+  available: voice.available(),
+  accessibility: voice.hasAccessibility(),
+  microphone: systemPreferences.getMediaAccessStatus('microphone'),
+}));
+
+ipcMain.handle('voice:request-access', safe(async () => {
+  const microphone = await systemPreferences.askForMediaAccess('microphone');
+  voice.requestAccessibility(); // opens the Accessibility pane when not yet trusted
+  return { microphone, accessibility: voice.hasAccessibility() };
+}));
+
 // ---------- IPC ----------
 
 ipcMain.on('buddy:context-menu', showContextMenu);
 ipcMain.on('buddy:open-settings', openSettings);
 
-ipcMain.handle('settings:get', () => ({ settings: settings.get(), patterns: PATTERNS, led: led.getState(), state: currentState }));
+ipcMain.handle('settings:get', () => ({
+  settings: settings.get(),
+  patterns: PATTERNS,
+  locales: LOCALES,
+  led: led.getState(),
+  state: currentState,
+}));
 ipcMain.handle('settings:update', safe((patch) => applySettings(patch)));
 ipcMain.handle('settings:detect', safe(() => led.transport.detect()));
 ipcMain.handle('settings:preview', safe((scene) => {
@@ -255,6 +306,7 @@ app.whenReady().then(() => {
   setupLed();
   createWindow();
   startServer();
+  if (!registerHotkey(settings.get().voice)) console.log('[voice] could not register the hotkey');
 });
 
 // Once noble is loaded Electron can't exit normally, and a lingering process would keep

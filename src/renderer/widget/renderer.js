@@ -4,11 +4,13 @@ import { playSound } from '../shared/sounds.js';
 import { createRig } from './mascot/rig.js';
 import { Brain } from './mascot/brain.js';
 import { createRing } from './mascot/ring.js';
+import { VoiceRecorder } from './voice.js';
 
 const STATES = {
   idle:        { label: 'Idle',                        body: '#D97757', ring: '#5BC98A', ringSpeed: 0.5 },
   working:     { label: 'Working…',                    body: '#D97757', ring: '#4A9EFF', ringSpeed: 7.0 },
   needs_input: { label: 'Needs you — review & accept', body: '#F2B84B', ring: '#FF4D4D', ringSpeed: 2.0 },
+  listening:   { label: 'Listening…',                  body: '#D97757', ring: '#A78BFA', ringSpeed: 4.0 },
   done:        { label: 'Done ✓',                      body: '#D97757', ring: '#5BC98A', ringSpeed: 1.5 },
 };
 
@@ -356,4 +358,97 @@ const LED_DOT = { connected: '#5BC98A', connecting: '#F2B84B', reconnecting: '#F
 window.buddy.onLedState((led) => {
   settingsBtn.style.setProperty('--led-dot', LED_DOT[led.status] || 'transparent');
   settingsBtn.title = `Settings · LED ${led.status}`;
+});
+
+// ---------- voice ----------
+// Click the mascot to talk, hold him for push-to-talk, or use the global hotkey.
+// What you say is transcribed on-device and pasted into the Claude Code prompt.
+const HOLD_MS = 350;
+const DRAG_PX = 5;
+
+let voiceCfg = { enabled: true, locale: 'en-US', autoSend: false };
+let listening = false;
+let transcribing = false;
+let gesture = null;
+
+window.buddy.onVoice((cfg) => { voiceCfg = cfg; });
+
+const recorder = new VoiceRecorder({
+  onLevel: (level) => { brain.listenLevel = level; },
+  onAutoStop: () => stopListening(),
+});
+
+// The ring shows listening; everything else keeps following Claude's state.
+function showListening(on) {
+  brain.setListening(on);
+  brain.listenLevel = 0;
+  ring.setState(on ? STATES.listening : STATES[state]);
+  labelEl.textContent = on ? STATES.listening.label : STATES[state].label;
+}
+
+async function startListening() {
+  if (listening || transcribing || !voiceCfg.enabled) return;
+  try {
+    await recorder.start();
+  } catch {
+    say('I can\'t hear — check mic access', 5000);
+    return;
+  }
+  listening = true;
+  showListening(true);
+  hideBubble();
+}
+
+async function stopListening() {
+  if (!listening) return;
+  listening = false;
+  const wav = recorder.stop();
+  showListening(false);
+  if (!wav) return say('That was too short', 2500);
+
+  transcribing = true;
+  say('Thinking…', Infinity);
+  const res = await window.buddy.voice.transcribe(wav);
+  transcribing = false;
+  hideBubble();
+  if (!res.ok) say(res.error, 6000);
+  else if (!res.result.text) say('I didn\'t catch that', 3000);
+  else say(`“${res.result.text}”`, 4000);
+}
+
+const toggleListening = () => (listening ? stopListening() : startListening());
+window.buddy.onVoiceToggle(toggleListening);
+
+// One gesture handles both: move the mouse and it drags the widget, otherwise it talks.
+document.addEventListener('mousedown', (e) => {
+  if (e.button !== 0 || e.target.closest('button')) return;
+  gesture = { x: e.screenX, y: e.screenY, onMascot: e.target === canvas, dragging: false, held: false, timer: null };
+  window.buddy.dragStart();
+  gesture.timer = setTimeout(() => {
+    if (gesture && !gesture.dragging && gesture.onMascot) {
+      gesture.held = true;
+      startListening();
+    }
+  }, HOLD_MS);
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!gesture) return;
+  const dx = e.screenX - gesture.x;
+  const dy = e.screenY - gesture.y;
+  if (!gesture.dragging && Math.hypot(dx, dy) > DRAG_PX) {
+    gesture.dragging = true;
+    clearTimeout(gesture.timer);
+  }
+  if (gesture.dragging) window.buddy.dragMove(dx, dy);
+});
+
+window.addEventListener('mouseup', () => {
+  if (!gesture) return;
+  clearTimeout(gesture.timer);
+  const done = gesture;
+  gesture = null;
+  if (done.dragging) return;
+  if (done.held) stopListening();        // push-to-talk released
+  else if (done.onMascot) toggleListening();
 });

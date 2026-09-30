@@ -8,6 +8,8 @@
     "start": "electron .",
     "launch-buddy": "sh ./scripts/launch-buddy.sh",
     "test": "node --test test/*.test.js",
+    "build:native": "sh native/build.sh",
+    "postinstall": "sh native/build.sh || true",
     "led:probe": "node scripts/led-probe.js"
   },
   "dependencies": {

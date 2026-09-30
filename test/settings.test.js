@@ -101,3 +101,18 @@ test('sound choices are validated', () => {
   assert.equal(s.repeat, false);
   assert.equal(s.needs_input, 'whistle');
 });
+
+test('voice settings are validated', () => {
+  const v = sanitize({ voice: { locale: 'ar-SA', hotkey: '  Control+Alt+K  ', autoSend: true, enabled: 'nope' } }).voice;
+  assert.equal(v.locale, 'ar-SA');
+  assert.equal(v.hotkey, 'Control+Alt+K');
+  assert.equal(v.autoSend, true);
+  assert.equal(v.enabled, DEFAULTS.voice.enabled); // bad type ignored
+  assert.equal(sanitize({ voice: { locale: 'xx-XX' } }).voice.locale, DEFAULTS.voice.locale);
+});
+
+test('voice defaults: enabled, English, and it does not send on its own', () => {
+  assert.equal(DEFAULTS.voice.enabled, true);
+  assert.equal(DEFAULTS.voice.locale, 'en-US');
+  assert.equal(DEFAULTS.voice.autoSend, false);
+});

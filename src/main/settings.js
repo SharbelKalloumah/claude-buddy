@@ -9,6 +9,7 @@ const NAME_MAX = 30;
 // Must match the sounds in src/renderer/shared/sounds.js.
 const SOUND_IDS = ['none', 'whistle', 'siren', 'doorbell', 'chime', 'beep', 'success', 'tada', 'pop', 'click'];
 const SOUND_EVENTS = ['needs_input', 'done', 'working'];
+const LOCALES = ['en-US', 'en-GB', 'ar-SA', 'fr-FR', 'de-DE', 'es-ES', 'it-IT', 'nl-NL', 'pt-BR', 'tr-TR', 'ru-RU', 'zh-CN', 'ja-JP', 'ko-KR'];
 
 // Default name: the OS account name, capitalized ("sharbel" → "Sharbel").
 function defaultName() {
@@ -24,6 +25,7 @@ const DEFAULTS = {
   userName: defaultName(),
   sound: true, // master switch
   sounds: { volume: 70, repeat: true, needs_input: 'whistle', done: 'none', working: 'none' },
+  voice: { enabled: true, hotkey: 'Control+Alt+Space', locale: 'en-US', autoSend: false },
   led: {
     enabled: true,
     autoConnect: false,
@@ -52,6 +54,12 @@ function sanitize(input, base = DEFAULTS) {
     const name = input.userName.replace(/\s+/g, ' ').trim().slice(0, NAME_MAX);
     out.userName = name || defaultName();
   }
+  const voice = input.voice || {};
+  if (typeof voice.enabled === 'boolean') out.voice.enabled = voice.enabled;
+  if (typeof voice.autoSend === 'boolean') out.voice.autoSend = voice.autoSend;
+  if (LOCALES.includes(voice.locale)) out.voice.locale = voice.locale;
+  if (typeof voice.hotkey === 'string' && voice.hotkey.length <= 60) out.voice.hotkey = voice.hotkey.trim();
+
   const led = input.led || {};
   if (typeof led.enabled === 'boolean') out.led.enabled = led.enabled;
   if (typeof led.autoConnect === 'boolean') out.led.autoConnect = led.autoConnect;
@@ -92,4 +100,4 @@ class Settings {
   }
 }
 
-module.exports = { Settings, sanitize, DEFAULTS, STATES, NAME_MAX, SOUND_IDS };
+module.exports = { Settings, sanitize, DEFAULTS, STATES, NAME_MAX, SOUND_IDS, LOCALES };

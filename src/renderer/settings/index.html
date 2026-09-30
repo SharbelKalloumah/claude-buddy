@@ -122,6 +122,32 @@
   </section>
 
   <section>
+    <h2>Voice</h2>
+    <p class="hint" style="margin-top:0">Click the mascot to talk, hold him to push-to-talk, or press the shortcut. What you say is transcribed on your Mac and pasted into the Claude Code prompt.</p>
+    <label class="row">
+      <span class="grow">Enable voice</span>
+      <span class="switch"><input id="voice-enabled" type="checkbox"><span></span></span>
+    </label>
+    <div class="row">
+      <span class="grow">Shortcut</span>
+      <button id="hotkey">…</button>
+    </div>
+    <div class="row">
+      <span class="grow">Language</span>
+      <select id="voice-locale"></select>
+    </div>
+    <label class="row">
+      <span class="grow">Press Enter for me <small class="muted">(send without reviewing)</small></span>
+      <span class="switch"><input id="voice-send" type="checkbox"><span></span></span>
+    </label>
+    <div class="row">
+      <span class="dot" id="voice-dot"></span>
+      <span class="grow" id="voice-status">Checking…</span>
+      <button id="voice-grant" hidden>Grant access</button>
+    </div>
+  </section>
+
+  <section>
     <h2>Sounds</h2>
     <label class="row">
       <span class="grow">Play sounds</span>

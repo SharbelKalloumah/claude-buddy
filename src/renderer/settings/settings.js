@@ -25,6 +25,8 @@ const STATUS = {
 
 let settings = null;
 let patterns = [];
+let locales = [];
+let capturingHotkey = false;
 let ledStatus = 'disconnected';
 
 const toHex = (rgb) => '#' + rgb.map((v) => v.toString(16).padStart(2, '0')).join('');
@@ -58,8 +60,36 @@ function renderStatus(led) {
   $('brightness-value').textContent = `${$('light-brightness').value}%`;
 }
 
+// Show the accelerator the way people read it.
+const prettyKey = (accel) => accel
+  .replace('CommandOrControl', '\u2318').replace('Command', '\u2318').replace('Cmd', '\u2318')
+  .replace('Control', '\u2303').replace('Ctrl', '\u2303')
+  .replace('Alt', '\u2325').replace('Option', '\u2325')
+  .replace('Shift', '\u21e7')
+  .replaceAll('+', ' ');
+
+async function renderVoiceStatus() {
+  const s = await api.voiceStatus();
+  const problems = [];
+  if (!s.available) problems.push('speech helper missing (run native/build.sh)');
+  if (s.microphone !== 'granted') problems.push('microphone not allowed');
+  if (!s.accessibility) problems.push('accessibility not allowed');
+  $('voice-status').textContent = problems.length ? problems.join(' · ') : 'Ready';
+  $('voice-status').title = $('voice-status').textContent;
+  $('voice-dot').style.background = problems.length ? 'var(--warn)' : 'var(--ok)';
+  $('voice-grant').hidden = s.available && !problems.length;
+}
+
 function render() {
   if (document.activeElement !== $('user-name')) $('user-name').value = settings.userName;
+  $('voice-enabled').checked = settings.voice.enabled;
+  $('voice-send').checked = settings.voice.autoSend;
+  if (!capturingHotkey) $('hotkey').textContent = prettyKey(settings.voice.hotkey) || 'Set shortcut';
+  const localeSelect = $('voice-locale');
+  if (!localeSelect.options.length) {
+    for (const id of locales) localeSelect.add(new Option(id, id));
+  }
+  localeSelect.value = settings.voice.locale;
   $('sound').checked = settings.sound;
   $('volume').value = settings.sounds.volume;
   $('volume-value').textContent = `${settings.sounds.volume}%`;
@@ -189,6 +219,38 @@ const saveName = () => {
 };
 $('user-name').addEventListener('input', () => { clearTimeout(nameTimer); nameTimer = setTimeout(saveName, 600); });
 $('user-name').addEventListener('change', saveName);
+$('voice-enabled').addEventListener('change', (e) => save({ voice: { enabled: e.target.checked } }));
+$('voice-send').addEventListener('change', (e) => save({ voice: { autoSend: e.target.checked } }));
+$('voice-locale').addEventListener('change', (e) => save({ voice: { locale: e.target.value } }));
+$('voice-grant').addEventListener('click', async () => {
+  await api.requestVoiceAccess();
+  renderVoiceStatus();
+});
+
+// Record a new shortcut from the next key press.
+$('hotkey').addEventListener('click', () => {
+  capturingHotkey = true;
+  $('hotkey').textContent = 'Press keys…';
+});
+window.addEventListener('keydown', (e) => {
+  if (!capturingHotkey) return;
+  e.preventDefault();
+  if (e.key === 'Escape') {
+    capturingHotkey = false;
+    return render();
+  }
+  const mods = [];
+  if (e.metaKey) mods.push('Command');
+  if (e.ctrlKey) mods.push('Control');
+  if (e.altKey) mods.push('Alt');
+  if (e.shiftKey) mods.push('Shift');
+  const key = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+  if (['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) return; // wait for a real key
+  if (!mods.length) return; // a bare key would swallow it everywhere
+  capturingHotkey = false;
+  save({ voice: { hotkey: [...mods, key].join('+') } });
+});
+
 $('sound').addEventListener('change', (e) => save({ sound: e.target.checked }));
 $('repeat').addEventListener('change', (e) => save({ sounds: { repeat: e.target.checked } }));
 $('volume').addEventListener('input', () => { $('volume-value').textContent = `${$('volume').value}%`; });
@@ -235,6 +297,8 @@ api.onSettings((s) => { settings = s; render(); });
 api.load().then((data) => {
   settings = data.settings;
   patterns = data.patterns;
+  locales = data.locales;
   render();
   renderStatus(data.led);
+  renderVoiceStatus();
 });
