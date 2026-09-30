@@ -8,7 +8,11 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const HELPER = path.join(__dirname, '..', '..', 'native', 'SpeechHelper.app');
+// Bundled under Resources/ once packaged; in the repo it sits in native/.
+const HELPER = (() => {
+  const packaged = path.join(process.resourcesPath || '', 'native', 'SpeechHelper.app');
+  return fs.existsSync(packaged) ? packaged : path.join(__dirname, '..', '..', 'native', 'SpeechHelper.app');
+})();
 const TRANSCRIBE_TIMEOUT = 90000;
 const CLIPBOARD_RESTORE_MS = 600;
 

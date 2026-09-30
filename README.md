@@ -43,10 +43,26 @@ Claude Code fires [hooks](https://code.claude.com/docs/en/hooks) as it works. Bu
 ## Requirements
 
 - **macOS** (Apple Silicon or Intel) — voice and the LED layer are macOS-only
-- **Node 18+**
-- **Xcode Command Line Tools** for the speech helper: `xcode-select --install`
+- **Claude Code**
+- To build from source: **Node 18+** and **Xcode Command Line Tools** (`xcode-select --install`) for the speech helper
 
 ## Install
+
+### Download the app
+
+Grab the latest `.dmg` from [**Releases**](https://github.com/SharbelKalloumah/claude-buddy/releases) — `arm64` for Apple Silicon, the plain one for Intel — and drag **Claude Buddy** to Applications.
+
+The app is **not signed with an Apple Developer certificate**, so macOS will refuse to open it the first time. Clear the quarantine flag once:
+
+```sh
+xattr -dr com.apple.quarantine "/Applications/Claude Buddy.app"
+```
+
+Then open it normally. (Or open it once, then allow it under System Settings → Privacy & Security.)
+
+Finally, click **⚙ → Claude Code → Connect** to add the hooks, and **Voice → Grant access** for the microphone.
+
+### Run from source
 
 ```sh
 git clone https://github.com/SharbelKalloumah/claude-buddy.git
@@ -55,14 +71,14 @@ npm install          # also builds the speech helper
 npm start
 ```
 
-Then connect it to Claude Code:
+Connect it to Claude Code from the command line if you prefer:
 
 ```sh
 node scripts/merge-hooks.js --dry-run   # preview the change
 node scripts/merge-hooks.js             # back up settings.json, then merge
 ```
 
-This merges hooks into `~/.claude/settings.json` and **never touches your other settings**. Start a new Claude Code session and he'll begin reacting.
+Either way, the hooks go into `~/.claude/settings.json` and **nothing else in that file is touched** — your original is kept as `settings.json.bak`. Start a new Claude Code session and he'll begin reacting.
 
 > Run him in the background with `npm run launch-buddy`. Drag him anywhere by holding and moving the mouse. Right-click the label for **Always on top**, **Sound**, **Settings** and **Quit**.
 
@@ -151,7 +167,10 @@ Change the port with `CLAUDE_BUDDY_PORT=7799 npm start` and a matching `{ "env":
 ```sh
 npm test               # protocol, transport, patterns, settings, lighting, mascot behaviour
 npm run build:native   # rebuild the speech helper
+npm run dist           # build the .dmg and .zip installers into dist/
 ```
+
+Builds are ad-hoc signed, since there is no Apple Developer certificate. If you have one, drop the `identity` and `hardenedRuntime` overrides from the `build.mac` block in `package.json` and electron-builder will sign and notarize properly.
 
 ## Uninstall
 

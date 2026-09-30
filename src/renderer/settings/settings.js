@@ -68,6 +68,17 @@ const prettyKey = (accel) => accel
   .replace('Shift', '\u21e7')
   .replaceAll('+', ' ');
 
+let hooksInstalled = false;
+
+async function renderHooks() {
+  const { installed } = await api.hooksStatus();
+  hooksInstalled = installed;
+  $('hooks-status').textContent = installed ? 'Connected to Claude Code' : 'Not connected';
+  $('hooks-dot').style.background = installed ? 'var(--ok)' : 'var(--warn)';
+  $('hooks-toggle').textContent = installed ? 'Disconnect' : 'Connect';
+  $('hooks-autostart').disabled = !installed;
+}
+
 async function renderVoiceStatus() {
   const s = await api.voiceStatus();
   const problems = [];
@@ -219,6 +230,21 @@ const saveName = () => {
 };
 $('user-name').addEventListener('input', () => { clearTimeout(nameTimer); nameTimer = setTimeout(saveName, 600); });
 $('user-name').addEventListener('change', saveName);
+$('hooks-toggle').addEventListener('click', async () => {
+  const btn = $('hooks-toggle');
+  btn.disabled = true;
+  const res = hooksInstalled ? await api.removeHooks() : await api.installHooks($('hooks-autostart').checked);
+  btn.disabled = false;
+  toast(res.ok ? '' : res.error);
+  renderHooks();
+});
+// Re-write the hooks so the autostart variant swaps in or out.
+$('hooks-autostart').addEventListener('change', async (e) => {
+  if (!hooksInstalled) return;
+  const res = await api.installHooks(e.target.checked);
+  toast(res.ok ? '' : res.error);
+});
+
 $('voice-enabled').addEventListener('change', (e) => save({ voice: { enabled: e.target.checked } }));
 $('voice-send').addEventListener('change', (e) => save({ voice: { autoSend: e.target.checked } }));
 $('voice-locale').addEventListener('change', (e) => save({ voice: { locale: e.target.value } }));
@@ -301,4 +327,5 @@ api.load().then((data) => {
   render();
   renderStatus(data.led);
   renderVoiceStatus();
+  renderHooks();
 });

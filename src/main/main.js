@@ -9,6 +9,7 @@ const { PATTERNS } = require('./led/patterns');
 const { Settings, LOCALES } = require('./settings');
 const { Lighting } = require('./lighting');
 const voice = require('./voice');
+const hooks = require('./hooks');
 
 const HOST = '127.0.0.1'; // local only
 const DEFAULT_PORT = 7788;
@@ -272,6 +273,10 @@ ipcMain.handle('settings:get', () => ({
   state: currentState,
 }));
 ipcMain.handle('settings:update', safe((patch) => applySettings(patch)));
+ipcMain.handle('hooks:status', () => ({ installed: hooks.installed(), file: hooks.SETTINGS }));
+ipcMain.handle('hooks:install', safe((autostart) => hooks.install({ autostart })));
+ipcMain.handle('hooks:remove', safe(() => hooks.remove()));
+
 ipcMain.handle('settings:detect', safe(() => led.transport.detect()));
 ipcMain.handle('settings:preview', safe((scene) => {
   if (led.getState().status !== 'connected') throw new Error('Connect the strip first');

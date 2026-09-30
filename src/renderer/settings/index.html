@@ -122,6 +122,20 @@
   </section>
 
   <section>
+    <h2>Claude Code</h2>
+    <p class="hint" style="margin-top:0">Buddy reacts to Claude Code's hooks. Connecting adds them to <code>~/.claude/settings.json</code> and leaves the rest of the file untouched — your old copy is kept as <code>settings.json.bak</code>.</p>
+    <div class="row">
+      <span class="dot" id="hooks-dot"></span>
+      <span class="grow" id="hooks-status">Checking…</span>
+      <button id="hooks-toggle">…</button>
+    </div>
+    <label class="row">
+      <span class="grow">Start Buddy automatically with each session</span>
+      <span class="switch"><input id="hooks-autostart" type="checkbox"><span></span></span>
+    </label>
+  </section>
+
+  <section>
     <h2>Voice</h2>
     <p class="hint" style="margin-top:0">Click the mascot to talk, hold him to push-to-talk, or press the shortcut. What you say is transcribed on your Mac and pasted into the Claude Code prompt.</p>
     <label class="row">

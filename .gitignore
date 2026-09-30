@@ -4,7 +4,6 @@ node_modules/
 # Build output
 dist/
 out/
-build/
 native/*.app
 
 # Logs
@@ -22,3 +21,4 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+dist/

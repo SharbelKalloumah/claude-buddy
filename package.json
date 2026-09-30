@@ -1,7 +1,7 @@
 {
   "name": "claude-buddy",
   "version": "1.0.0",
-  "description": "Floating 3D desktop status widget for Claude Code",
+  "description": "A 3D desk companion that shows what Claude Code is doing — and lets you talk to it",
   "main": "src/main/main.js",
   "private": true,
   "scripts": {
@@ -10,13 +10,93 @@
     "test": "node --test test/*.test.js",
     "build:native": "sh native/build.sh",
     "postinstall": "sh native/build.sh || true",
-    "led:probe": "node scripts/led-probe.js"
+    "led:probe": "node scripts/led-probe.js",
+    "dist": "npm run build:native && electron-builder --mac",
+    "pack": "npm run build:native && electron-builder --mac --dir"
   },
   "dependencies": {
     "@abandonware/noble": "^1.9.2-26",
     "three": "^0.186.1"
   },
   "devDependencies": {
-    "electron": "^44.5.1"
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "author": "Sharbel",
+  "license": "MIT",
+  "build": {
+    "appId": "com.claudebuddy.app",
+    "productName": "Claude Buddy",
+    "copyright": "Copyright © 2026 Sharbel",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "!**/*.map",
+      "!node_modules/**/{test,__tests__,docs,example,examples,.github}/**"
+    ],
+    "asarUnpack": [
+      "**/*.node",
+      "node_modules/@abandonware/**"
+    ],
+    "extraResources": [
+      {
+        "from": "native/SpeechHelper.app",
+        "to": "native/SpeechHelper.app"
+      },
+      {
+        "from": "hooks",
+        "to": "hooks"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "identity": null,
+      "hardenedRuntime": false,
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSMicrophoneUsageDescription": "Claude Buddy listens when you ask it to, so you can talk instead of type.",
+        "NSSpeechRecognitionUsageDescription": "Claude Buddy turns what you say into a prompt for Claude Code.",
+        "NSBluetoothAlwaysUsageDescription": "Claude Buddy controls your LED strip over Bluetooth.",
+        "NSAppleEventsUsageDescription": "Claude Buddy pastes what you said into the app you are working in."
+      }
+    },
+    "dmg": {
+      "title": "Claude Buddy",
+      "contents": [
+        {
+          "x": 140,
+          "y": 180,
+          "type": "file"
+        },
+        {
+          "x": 400,
+          "y": 180,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "afterPack": "build/after-pack.js"
   }
 }
