@@ -44,4 +44,4 @@ npm run led:probe                        # find it and list its services (sends 
 npm run led:probe -- --send off,on,red   # send a few test commands
 ```
 
-If yours shows service `EEA0` with `EE01`/`EE02` and responds to `--send off`, it should work. If it uses other bytes, add them in `src/main/led/protocol.js`; everything device-specific is in that file.
+If yours shows service `EEA0` with `EE01`/`EE02` and responds to `--send off`, it should work. If it uses other bytes, add them in `src/main/led/protocol.ts`; everything device-specific is in that file.

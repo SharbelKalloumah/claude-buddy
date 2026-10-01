@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "strict": true,
+    "composite": true,
+    "declaration": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+
+    // Sources live in src/ and compile to a mirrored tree in out/, so src/ holds
+    // only TypeScript. Keeping the layout identical means every relative import
+    // and every __dirname path works the same before and after compiling.
+    "rootDir": "src",
+    "outDir": "out"
+  }
+}

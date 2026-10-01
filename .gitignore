@@ -6,6 +6,9 @@ dist/
 out/
 native/*.app
 
+# TypeScript output
+*.tsbuildinfo
+
 # Logs
 *.log
 npm-debug.log*

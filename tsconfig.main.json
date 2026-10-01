@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Electron's main process, the preload bridges, the tests and the dev scripts all
+    // run in Node as CommonJS. "node16" keeps `await import()` intact in the output,
+    // which the tests need to load the renderer's ES modules.
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "tsBuildInfoFile": "out/.tsbuildinfo-main"
+  },
+  "include": ["src/main", "src/preload", "src/shared", "src/test", "src/scripts", "src/build"],
+  "references": [{ "path": "./tsconfig.renderer.json" }]
+}

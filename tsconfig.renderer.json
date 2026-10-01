@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // The renderer runs as native ES modules in the browser: no bundler, so the
+    // emitted import specifiers keep the ".js" extensions written in the sources.
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "tsBuildInfoFile": "out/.tsbuildinfo-renderer"
+  },
+  "include": ["src/renderer", "src/shared"]
+}

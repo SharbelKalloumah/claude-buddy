@@ -1,41 +1,53 @@
 {
   "name": "claude-buddy",
   "version": "1.0.0",
-  "description": "A 3D desk companion that shows what Claude Code is doing — and lets you talk to it",
-  "main": "src/main/main.js",
+  "description": "A 3D desk companion that shows what Claude Code is doing \u2014 and lets you talk to it",
+  "main": "out/main/main.js",
   "private": true,
   "scripts": {
+    "build": "tsc --build && node out/scripts/copy-assets.js",
+    "build:watch": "tsc --build --watch",
+    "typecheck": "tsc --build --force",
+    "clean": "tsc --build --clean",
+    "prestart": "npm run build",
     "start": "electron .",
     "launch-buddy": "sh ./scripts/launch-buddy.sh",
-    "test": "node --test test/*.test.js",
+    "pretest": "npm run build",
+    "test": "node --test out/test/*.test.js",
     "build:native": "sh native/build.sh",
     "postinstall": "sh native/build.sh || true",
-    "led:probe": "node scripts/led-probe.js",
-    "dist": "npm run build:native && electron-builder --mac",
-    "pack": "npm run build:native && electron-builder --mac --dir"
+    "led:probe": "npm run build && node out/scripts/led-probe.js",
+    "dist": "npm run build && npm run build:native && electron-builder --mac",
+    "pack": "npm run build && npm run build:native && electron-builder --mac --dir"
   },
   "dependencies": {
     "@abandonware/noble": "^1.9.2-26",
     "three": "^0.186.1"
   },
   "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/three": "^0.186.0",
     "electron": "^44.5.1",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "typescript": "^7.0.2"
   },
   "author": "Sharbel",
   "license": "MIT",
   "build": {
     "appId": "com.claudebuddy.app",
     "productName": "Claude Buddy",
-    "copyright": "Copyright © 2026 Sharbel",
+    "copyright": "Copyright \u00a9 2026 Sharbel",
     "directories": {
       "output": "dist",
       "buildResources": "build"
     },
     "files": [
-      "src/**/*",
+      "out/main/**/*",
+      "out/preload/**/*",
+      "out/renderer/**/*",
       "package.json",
       "!**/*.map",
+      "!**/*.d.ts",
       "!node_modules/**/{test,__tests__,docs,example,examples,.github}/**"
     ],
     "asarUnpack": [
@@ -97,6 +109,6 @@
         }
       ]
     },
-    "afterPack": "build/after-pack.js"
+    "afterPack": "out/build/after-pack.js"
   }
 }

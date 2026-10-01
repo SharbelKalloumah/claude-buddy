@@ -74,8 +74,9 @@ npm start
 Connect it to Claude Code from the command line if you prefer:
 
 ```sh
-node scripts/merge-hooks.js --dry-run   # preview the change
-node scripts/merge-hooks.js             # back up settings.json, then merge
+npm run build                               # once, if you haven't started him yet
+node out/scripts/merge-hooks.js --dry-run   # preview the change
+node out/scripts/merge-hooks.js             # back up settings.json, then merge
 ```
 
 Either way, the hooks go into `~/.claude/settings.json` and **nothing else in that file is touched** — your original is kept as `settings.json.bak`. Start a new Claude Code session and he'll begin reacting.
@@ -135,12 +136,21 @@ src/main/led/          BLE protocol, transport, controller, patterns
 src/preload/           context bridges (contextIsolation on, no Node in the pages)
 src/renderer/widget/   the mascot: rig, poses, moves, moods, ring, speech bubble
 src/renderer/settings/ the settings window
+src/shared/            types shared by the main process, preloads and pages
+src/scripts/           hook installer, LED probe, asset copier
+src/test/              run with `npm test` — no hardware needed
 native/                on-device speech helper (Swift)
-scripts/               launcher, hook installer, LED probe
-test/                  run with `npm test` — no hardware needed
+out/                   compiled output, mirroring src/ (gitignored)
 ```
 
-The mascot is a rigged voxel character: a big head on a flexible neck, eyebrows, a springy antenna with real spring physics, oversized hands, squash-and-stretch and dust puffs on landing. A behaviour engine (`mascot/brain.js`) blends poses, plays signature moves — head bob, peek, shrug, spin, look back, stretch, wiggle, side step, freeze — and runs idle routines in one of five moods. His jokes live in the `QUIPS` list in `renderer.js`, where `{name}` becomes your name.
+Everything is TypeScript under `strict` — there is no JavaScript in the repo. `tsc`
+compiles `src/` into a mirrored `out/`: the main process and preloads to CommonJS, the
+pages to native ES modules the browser loads directly, no bundler involved. Because the
+two trees have the same shape, every relative import and `__dirname` path works the same
+before and after compiling. `npm start`, `npm test` and `npm run dist` build first, so
+there is nothing extra to remember.
+
+The mascot is a rigged voxel character: a big head on a flexible neck, eyebrows, a springy antenna with real spring physics, oversized hands, squash-and-stretch and dust puffs on landing. A behaviour engine (`mascot/brain.ts`) blends poses, plays signature moves — head bob, peek, shrug, spin, look back, stretch, wiggle, side step, freeze — and runs idle routines in one of five moods. His jokes live in the `QUIPS` list in `renderer.ts`, where `{name}` becomes your name.
 
 ## Hook reference
 
@@ -165,6 +175,9 @@ Change the port with `CLAUDE_BUDDY_PORT=7799 npm start` and a matching `{ "env":
 ## Development
 
 ```sh
+npm run build          # compile src/ into out/
+npm run build:watch    # …and keep compiling as you edit
+npm run typecheck      # full type check from scratch
 npm test               # protocol, transport, patterns, settings, lighting, mascot behaviour
 npm run build:native   # rebuild the speech helper
 npm run dist           # build the .dmg and .zip installers into dist/
@@ -175,7 +188,7 @@ Builds are ad-hoc signed, since there is no Apple Developer certificate. If you 
 ## Uninstall
 
 ```sh
-node scripts/merge-hooks.js --remove   # removes only Buddy's hooks
+node out/scripts/merge-hooks.js --remove   # removes only Buddy's hooks
 ```
 
 Then quit the widget and delete the folder. Your original `~/.claude/settings.json` is kept at `settings.json.bak`.
